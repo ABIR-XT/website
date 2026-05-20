@@ -1,5 +1,6 @@
 const STORAGE_KEY = "aincrad-key-vault";
 const THEME_KEY = "aincrad-key-theme";
+const API_URL = "api.php";
 
 const menuButton = document.querySelector("#menuButton");
 const pageMenu = document.querySelector("#pageMenu");
@@ -27,12 +28,23 @@ const vaultCount = document.querySelector("#vaultCount");
 const themeToggle = document.querySelector("#themeToggle");
 const toast = document.querySelector("#toast");
 
-let keys = readKeys();
+let keys = [];
 let toastTimer;
+let syncInProgress = false;
 
 document.body.dataset.page = "storage";
 applyTheme(readTheme());
-render();
+initApp();
+
+async function initApp() {
+  try {
+    keys = await loadKeysFromServer();
+  } catch (error) {
+    console.log("Server unavailable, using local storage:", error);
+    keys = readKeysLocal();
+  }
+  render();
+}
 
 menuButton.addEventListener("click", () => {
   const isOpen = pageMenu.classList.toggle("open");
@@ -77,7 +89,7 @@ applyExpiryButton.addEventListener("click", () => {
   closeDateTimePicker();
 });
 
-keyForm.addEventListener("submit", (event) => {
+keyForm.addEventListener("submit", async (event) => {
   event.preventDefault();
 
   const name = keyName.value.trim().toUpperCase();
@@ -115,7 +127,8 @@ keyForm.addEventListener("submit", (event) => {
     showToast("Key uploaded to storage.");
   }
 
-  saveKeys();
+  await saveKeysToServer();
+  saveKeysLocal();
   resetForm();
   render();
 });
@@ -127,6 +140,39 @@ themeToggle.addEventListener("click", () => {
   applyTheme(nextTheme);
   localStorage.setItem(THEME_KEY, nextTheme);
 });
+
+// Cloud Sync Functions
+async function loadKeysFromServer() {
+  const response = await fetch(API_URL);
+  const data = await response.json();
+  if (data.success) {
+    return data.keys;
+  }
+  throw new Error("Failed to load keys");
+}
+
+async function saveKeysToServer() {
+  if (syncInProgress) return;
+  syncInProgress = true;
+  
+  try {
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ keys })
+    });
+    const data = await response.json();
+    if (!data.success) {
+      console.error("Server sync failed:", data.message);
+      saveKeysLocal();
+    }
+  } catch (error) {
+    console.log("Server sync failed, using local backup:", error);
+    saveKeysLocal();
+  } finally {
+    syncInProgress = false;
+  }
+}
 
 function showPage(pageName) {
   const isStorage = pageName === "storage";
@@ -150,7 +196,7 @@ function closeDateTimePicker() {
   datetimeTrigger.setAttribute("aria-expanded", "false");
 }
 
-function readKeys() {
+function readKeysLocal() {
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
     if (!Array.isArray(saved)) {
@@ -166,7 +212,7 @@ function readKeys() {
   }
 }
 
-function saveKeys() {
+function saveKeysLocal() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(keys));
 }
 
@@ -274,9 +320,10 @@ function startEdit(item) {
   keyName.focus();
 }
 
-function deleteKey(id) {
+async function deleteKey(id) {
   keys = keys.filter((item) => item.id !== id);
-  saveKeys();
+  await saveKeysToServer();
+  saveKeysLocal();
   resetForm();
   render();
   showToast("Key deleted.");
