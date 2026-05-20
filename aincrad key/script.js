@@ -171,7 +171,7 @@ function saveKeys() {
 }
 
 function readTheme() {
-  return localStorage.getItem(THEME_KEY) || "dark";
+  return localStorage.getItem(THEME_KEY) || "light";
 }
 
 function applyTheme(theme) {
