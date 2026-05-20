@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aincrad Key Vault</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <div class="floating-lights" aria-hidden="true">
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+
+    <header class="topbar">
+      <button class="menu-button" id="menuButton" type="button" aria-label="Open page menu" aria-expanded="false" title="Menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+
+      <div class="brand-mark" aria-hidden="true">
+        <img src="assets/aincrad-key.png" alt="">
+      </div>
+
+      <div class="brand-copy">
+        <p>Aincrad</p>
+        <h1>Key Vault</h1>
+      </div>
+
+      <div class="top-actions">
+        <div class="vault-count" id="vaultCount">0 keys</div>
+        <button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch to light mode" title="Theme">
+          <svg class="moon-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M21 14.8A8.5 8.5 0 0 1 9.2 3 7 7 0 1 0 21 14.8Z"></path>
+          </svg>
+          <svg class="sun-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="4"></circle>
+            <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <nav class="page-menu" id="pageMenu" aria-label="Page menu">
+      <button class="menu-item active" type="button" data-page="storage">
+        <span class="menu-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M6 3h12a2 2 0 0 1 2 2v16l-8-4-8 4V5a2 2 0 0 1 2-2Z"/></svg>
+        </span>
+        <span>
+          <strong>Key Storage</strong>
+          <small>Copy saved keys</small>
+        </span>
+      </button>
+
+      <button class="menu-item" type="button" data-page="manager">
+        <span class="menu-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M12 3v18M5 8h14M5 16h14"/></svg>
+        </span>
+        <span>
+          <strong>Key Manager</strong>
+          <small>Upload and manage</small>
+        </span>
+      </button>
+    </nav>
+
+    <main>
+      <section class="page active" id="storagePage" aria-labelledby="storageTitle">
+        <div class="page-heading">
+          <div>
+            <p class="eyebrow">Storage</p>
+            <h2 id="storageTitle">Stored Aincrad Keys</h2>
+          </div>
+          <span class="readonly-badge">Copy only</span>
+        </div>
+
+        <div class="key-grid" id="storageList"></div>
+        <div class="empty-state" id="storageEmpty">
+          <img src="assets/aincrad-key.png" alt="">
+          <h3>No keys stored yet</h3>
+          <p>Open Key Manager from the menu to add your first key.</p>
+        </div>
+      </section>
+
+      <section class="page" id="managerPage" aria-labelledby="managerTitle">
+        <div class="page-heading">
+          <div>
+            <p class="eyebrow">Manager</p>
+            <h2 id="managerTitle">Upload And Manage Keys</h2>
+          </div>
+        </div>
+
+        <form class="key-form" id="keyForm" autocomplete="off">
+          <input type="hidden" id="editingId">
+
+          <label>
+            Enter key
+            <input id="keyName" name="keyName" type="text" placeholder="Paste or type your key" required maxlength="120">
+          </label>
+
+          <label>
+            Expiry date
+            <input id="keyValue" name="keyValue" type="hidden">
+            <div class="datetime-picker" id="datetimePicker">
+              <button class="datetime-trigger" id="datetimeTrigger" type="button" aria-expanded="false">
+                <span id="expiryDisplay">Select expiry date and time</span>
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <rect x="3" y="4" width="18" height="17" rx="2"></rect>
+                  <path d="M8 2v4M16 2v4M3 10h18"></path>
+                </svg>
+              </button>
+              <div class="datetime-panel" id="datetimePanel">
+                <input id="expiryDate" type="date" aria-label="Expiry date">
+                <input id="expiryTime" type="time" aria-label="Expiry time">
+                <button class="primary-button compact-button" id="applyExpiryButton" type="button">Set expiry</button>
+              </div>
+            </div>
+          </label>
+
+          <div class="form-actions">
+            <button class="primary-button" type="submit" id="saveButton">Upload key</button>
+            <button class="ghost-button" type="button" id="cancelEditButton" hidden>Cancel edit</button>
+          </div>
+        </form>
+
+        <div class="manager-list" id="managerList"></div>
+        <div class="empty-state compact" id="managerEmpty">
+          <img src="assets/aincrad-key.png" alt="">
+          <h3>No managed keys</h3>
+          <p>Uploaded keys will appear here and on the storage page.</p>
+        </div>
+      </section>
+    </main>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
